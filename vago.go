@@ -3,8 +3,8 @@
 package vago
 
 /*
-#cgo CFLAGS: -I/usr/local/include/varnish
-#cgo LDFLAGS: -L/usr/local/lib -lvarnishapi -lm
+#cgo pkg-config: varnishapi
+#cgo LDFLAGS: -lvarnishapi -lm
 #include <sys/types.h>
 #include <stdint.h>
 #include <stdio.h>
