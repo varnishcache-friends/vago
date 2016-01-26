@@ -127,7 +127,7 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 	return nil
 }
 
-// disptachCallback walks through the transaction and calls a function of
+// dispatchCallback walks through the transaction and calls a function of
 // type LogCallback.
 //export dispatchCallback
 func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, logCallback unsafe.Pointer) C.int {
