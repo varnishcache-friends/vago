@@ -16,3 +16,31 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 ```
 go get github.com/phenomenes/vago
 ```
+
+## Example
+```
+// Sample code that mimics varnishlog -g raw
+package main
+
+import (
+	"fmt"
+
+	"github.com/phenomenes/vago"
+)
+
+func main() {
+	// Open a Varnish Shared Memory file
+	v, err := vago.Open("/var/lib/varnish/foobar")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	v.Log("", vago.RAW, func(vxid uint32, tag string, _type string, data string) int {
+		fmt.Printf("%10d %-14s %s %s\n", vxid, tag, _type, data)
+		// -1  : Stop after it finds the first record
+		// > 0 : Nothing to do but wait
+		return 0
+	})
+	v.Close()
+}
+```
