@@ -37,8 +37,8 @@ func main() {
 	}
 	v.Log("", vago.RAW, func(vxid uint32, tag string, _type string, data string) int {
 		fmt.Printf("%10d %-14s %s %s\n", vxid, tag, _type, data)
-		// -1  : Stop after it finds the first record
-		// > 0 : Nothing to do but wait
+		// -1 : Stop after it finds the first record
+		// >= 0 : Nothing to do but wait
 		return 0
 	})
 	v.Close()
