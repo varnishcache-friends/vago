@@ -18,7 +18,8 @@ go get github.com/phenomenes/vago
 ```
 
 ## Examples
-Sample code that mimics `varnishlog -g raw`
+
+Same as running `varnishlog -g raw`:
 ```go
 package main
 

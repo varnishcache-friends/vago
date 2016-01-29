@@ -161,10 +161,8 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, log
 			// back it in a Go byte slice to retrieve its 32 bits
 			// elements.
 			b := C.GoBytes(unsafe.Pointer((*t).c.rec.ptr), 8)
-			// ptr length is 2 (ptr[0], ptr[1] and ptr[2])
 			s := make([]uint32, 2)
 			for i := range s {
-				// assuming little endian
 				s[i] = uint32(binary.LittleEndian.Uint32(b[i*4 : (i+1)*4]))
 			}
 			tag := C.GoString(C.VSL_tags[s[0]>>24])
@@ -186,21 +184,6 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, log
 		tx += unsafe.Sizeof(t)
 	}
 	return 0
-}
-
-// Convert uint32 to string
-func ui32tostr(val *uint32, lenght C.int) string {
-	return C.GoStringN((*C.char)(unsafe.Pointer(val)), lenght)
-}
-
-// Convert C.uint32_t to slice of uint32
-func cui32tosl(ptr *C.uint32_t, lenght C.int) []uint32 {
-	b := C.GoBytes(unsafe.Pointer(ptr), lenght)
-	s := make([]uint32, lenght/4)
-	for i := range s {
-		s[i] = uint32(binary.LittleEndian.Uint32(b[i*4 : (i+1)*4]))
-	}
-	return s
 }
 
 // Stats returns a map with all stat counters and their values.
@@ -240,4 +223,19 @@ func listCallback(priv unsafe.Pointer, pt *C.struct_VSC_point) C.int {
 
 	items[name] = value
 	return 0
+}
+
+// Convert uint32 to string
+func ui32tostr(val *uint32, lenght C.int) string {
+	return C.GoStringN((*C.char)(unsafe.Pointer(val)), lenght)
+}
+
+// Convert C.uint32_t to slice of uint32
+func cui32tosl(ptr *C.uint32_t, lenght C.int) []uint32 {
+	b := C.GoBytes(unsafe.Pointer(ptr), lenght)
+	s := make([]uint32, lenght/4)
+	for i := range s {
+		s[i] = uint32(binary.LittleEndian.Uint32(b[i*4 : (i+1)*4]))
+	}
+	return s
 }
