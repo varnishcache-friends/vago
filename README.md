@@ -17,9 +17,9 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 go get github.com/phenomenes/vago
 ```
 
-## Example
-```
-// Sample code that mimics varnishlog -g raw
+## Examples
+Sample code that mimics `varnishlog -g raw`
+```go
 package main
 
 import (
