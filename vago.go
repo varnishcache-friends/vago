@@ -52,15 +52,20 @@ type Varnish struct {
 // Varnish.
 func Open(path string) (*Varnish, error) {
 	v := Varnish{}
-	cs := C.CString(path)
-	defer C.free(unsafe.Pointer(cs))
 	v.vsm = C.VSM_New()
 	if v.vsm == nil {
 		err := errors.New(C.GoString(C.VSM_Error(v.vsm)))
 		return nil, err
 	}
-	if C.VSM_n_Arg(v.vsm, cs) != 1 ||
-		C.VSM_Open(v.vsm) < 0 {
+	if path != "" {
+		cs := C.CString(path)
+		defer C.free(unsafe.Pointer(cs))
+		if C.VSM_n_Arg(v.vsm, cs) != 1 {
+			err := errors.New(C.GoString(C.VSM_Error(v.vsm)))
+			return nil, err
+		}
+	}
+	if C.VSM_Open(v.vsm) < 0 {
 		err := errors.New(C.GoString(C.VSM_Error(v.vsm)))
 		return nil, err
 	}
