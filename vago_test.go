@@ -42,6 +42,30 @@ func TestLog(t *testing.T) {
 	v.Close()
 }
 
+func TestStats(t *testing.T) {
+	v, err := Open("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	items := v.Stats()
+	if len(items) == 0 {
+		t.Fatal("Expected map with elements")
+	}
+	v.Close()
+}
+
+func TestStat(t *testing.T) {
+	v, err := Open("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	uptime := v.Stat("MAIN.uptime")
+	if uptime < 0 {
+		t.Fatal("Expected value > 0")
+	}
+	v.Close()
+}
+
 func startVarnish() {
 	cmd := exec.Command("sudo", "service", "varnish", "start")
 	err := cmd.Run()
