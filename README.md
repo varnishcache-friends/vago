@@ -29,8 +29,8 @@ import (
 )
 
 func main() {
-	// Open a Varnish Shared Memory file
-	v, err := vago.Open("/var/lib/varnish/foobar")
+	// Open the default Varnish Shared Memory file
+	v, err := vago.Open("")
 	if err != nil {
 		fmt.Println(err)
 		return
