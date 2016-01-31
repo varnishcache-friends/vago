@@ -45,3 +45,28 @@ func main() {
 	v.Close()
 }
 ```
+
+Same for `varnishstat -1`:
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/phenomenes/vago"
+)
+
+func main() {
+	// Open the default Varnish Shared Memory file
+	v, err := vago.Open("")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	stats := v.Stats()
+	for field, value := range stats {
+		fmt.Printf("%-35s\t%12d\n", field, value)
+	}
+	v.Close()
+}
+```
