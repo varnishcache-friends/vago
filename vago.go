@@ -54,20 +54,17 @@ func Open(path string) (*Varnish, error) {
 	v := Varnish{}
 	v.vsm = C.VSM_New()
 	if v.vsm == nil {
-		err := errors.New(C.GoString(C.VSM_Error(v.vsm)))
-		return nil, err
+		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 	}
 	if path != "" {
 		cs := C.CString(path)
 		defer C.free(unsafe.Pointer(cs))
 		if C.VSM_n_Arg(v.vsm, cs) != 1 {
-			err := errors.New(C.GoString(C.VSM_Error(v.vsm)))
-			return nil, err
+			return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 		}
 	}
 	if C.VSM_Open(v.vsm) < 0 {
-		err := errors.New(C.GoString(C.VSM_Error(v.vsm)))
-		return nil, err
+		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 	}
 	return &v, nil
 }
@@ -110,8 +107,7 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 		v.vslq = C.VSLQ_New(v.vsl, nil, grouping, nil)
 	}
 	if v.vslq == nil {
-		err := errors.New(C.GoString(C.VSL_Error(v.vsl)))
-		return err
+		return errors.New(C.GoString(C.VSL_Error(v.vsl)))
 	}
 	C.VSLQ_SetCursor((*v).vslq, &v.cursor)
 	for {
@@ -198,8 +194,7 @@ func (v *Varnish) Stats() map[string]uint64 {
 // Stat takes a counter and returns its value.
 func (v *Varnish) Stat(s string) uint64 {
 	stats := v.Stats()
-	stat := stats[s]
-	return stat
+	return stats[s]
 }
 
 //export listCallback
