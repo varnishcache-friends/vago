@@ -33,7 +33,7 @@ func TestLog(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	v.Log("", RAW, func(vxid uint32, tag string, _type string, data string) int {
+	v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
 		if vxid == 0 && tag == "CLI" && _type == "-" && strings.Contains(data, "PONG") {
 			return -1
 		}
