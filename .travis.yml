@@ -1,0 +1,9 @@
+language: go
+go:
+  - 1.5.3
+addons:
+  apt:
+    packages:
+      - varnish=4.1.0-1~trusty
+      - libvarnishapi-dev=4.1.0-1~trusty
+script: go test -v
