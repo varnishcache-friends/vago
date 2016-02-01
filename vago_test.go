@@ -1,6 +1,7 @@
 package vago
 
 import (
+	"fmt"
 	"os/exec"
 	"strings"
 	"testing"

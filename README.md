@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/phenomenes/vago.svg?branch=master)](https://travis-ci.org/phenomenes/vago)
+
 # vago
 Go bindings for the Varnish API using cgo.
 
