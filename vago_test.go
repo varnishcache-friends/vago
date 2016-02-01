@@ -14,15 +14,14 @@ func TestOpenFail(t *testing.T) {
 
 func TestOpenOK(t *testing.T) {
 	v, err := Open("")
-	defer v.Close()
 	if err != nil {
 		t.Fatal("Expected non nil")
 	}
+	v.Close()
 }
 
 func TestLog(t *testing.T) {
 	v, err := Open("")
-	defer v.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,14 +31,15 @@ func TestLog(t *testing.T) {
 		}
 		return 0
 	})
+	v.Close()
 }
 
 func TestStats(t *testing.T) {
 	v, err := Open("")
-	defer v.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer v.Close()
 	items := v.Stats()
 	if len(items) == 0 {
 		t.Fatal("Expected map with elements")
@@ -48,10 +48,10 @@ func TestStats(t *testing.T) {
 
 func TestStat(t *testing.T) {
 	v, err := Open("")
-	defer v.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer v.Close()
 	uptime := v.Stat("MAIN.uptime")
 	if uptime < 0 {
 		t.Fatal("Expected value > 0")
