@@ -1,18 +1,9 @@
 package vago
 
 import (
-	"fmt"
-	"os/exec"
 	"strings"
 	"testing"
-	"time"
 )
-
-func TestMain(m *testing.M) {
-	startVarnish()
-	m.Run()
-	stopVarnish()
-}
 
 func TestOpenFail(t *testing.T) {
 	_, err := Open("/nonexistent")
@@ -64,22 +55,5 @@ func TestStat(t *testing.T) {
 	uptime := v.Stat("MAIN.uptime")
 	if uptime < 0 {
 		t.Fatal("Expected value > 0")
-	}
-}
-
-func startVarnish() {
-	cmd := exec.Command("sudo", "service", "varnish", "start")
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(err)
-	}
-	time.Sleep(1 * 1000000000)
-}
-
-func stopVarnish() {
-	cmd := exec.Command("sudo", "service", "varnish", "stop")
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(err)
 	}
 }

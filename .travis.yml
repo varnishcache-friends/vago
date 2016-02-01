@@ -13,4 +13,6 @@ before_install:
     sudo tee /etc/apt/sources.list.d/varnish-cache.list
   - sudo apt-get update
   - sudo apt-get install varnish libvarnishapi-dev
+before_script:
+  - sudo service varnish start
 script: go test -v
