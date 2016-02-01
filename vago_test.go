@@ -70,6 +70,7 @@ func startVarnish() {
 	cmd := exec.Command("sudo", "service", "varnish", "start")
 	err := cmd.Run()
 	if err != nil {
+		fmt.Println(err)
 	}
 	time.Sleep(1 * 1000000000)
 }
@@ -78,5 +79,6 @@ func stopVarnish() {
 	cmd := exec.Command("sudo", "service", "varnish", "stop")
 	err := cmd.Run()
 	if err != nil {
+		fmt.Println(err)
 	}
 }
