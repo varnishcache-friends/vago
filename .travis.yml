@@ -3,9 +3,16 @@ dist: trusty
 language: go
 go:
   - 1.5.3
-addons:
-  apt:
-    packages:
-      - varnish=4.1.0-1~trusty
-      - libvarnishapi-dev=4.1.0-1~trusty
+env:
+  - VER=4.0
+  - VER=4.1
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install apt-transport-https python-docutils
+  - curl -s https://repo.varnish-cache.org/ubuntu/GPG-key.txt |
+    sudo apt-key add -
+  - echo "deb https://repo.varnish-cache.org/ubuntu/ precise varnish-$VER" |
+    sudo tee /etc/apt/sources.list.d/varnish-cache.list
+  - sudo apt-get update
+  - sudo apt-get install varnish libvarnishapi-dev
 script: go test -v
