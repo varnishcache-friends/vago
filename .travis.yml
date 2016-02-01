@@ -13,4 +13,5 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install varnish libvarnishapi-dev
   - sudo usermod -a -G varnish $USER
+  - newgrp varnish
 script: go test -v
