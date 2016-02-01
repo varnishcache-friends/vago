@@ -1,5 +1,3 @@
-sudo: required
-dist: trusty
 language: go
 go:
   - 1.5.3
@@ -8,7 +6,7 @@ env:
   - VER=4.1
 before_install:
   - sudo apt-get update
-  - sudo apt-get install apt-transport-https python-docutils
+  - sudo apt-get install apt-transport-https
   - curl -s https://repo.varnish-cache.org/ubuntu/GPG-key.txt |
     sudo apt-key add -
   - echo "deb https://repo.varnish-cache.org/ubuntu/ precise varnish-$VER" |
