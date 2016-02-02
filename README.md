@@ -34,7 +34,6 @@ import (
 func main() {
 	// Open the default Varnish Shared Memory file
 	v, err := vago.Open("")
-	defer v.Close()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -45,6 +44,7 @@ func main() {
 		// >= 0 : Nothing to do but wait
 		return 0
 	})
+	v.Close()
 }
 ```
 
@@ -61,7 +61,6 @@ import (
 func main() {
 	// Open the default Varnish Shared Memory file
 	v, err := vago.Open("")
-	defer v.Close()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -70,5 +69,6 @@ func main() {
 	for field, value := range stats {
 		fmt.Printf("%-35s\t%12d\n", field, value)
 	}
+	v.Close()
 }
 ```
