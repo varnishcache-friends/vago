@@ -86,7 +86,7 @@ func (v *Varnish) Close() {
 // It's used by Log.
 type LogCallback func(vxid uint32, tag, _type, data string) int
 
-// Log calls the given callback for any transactions matching the qeury
+// Log calls the given callback for any transactions matching the query
 // and grouping.
 func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) error {
 	v.vsl = C.VSL_New()
