@@ -199,11 +199,12 @@ func (v *Varnish) Stat(s string) uint64 {
 
 //export listCallback
 func listCallback(priv unsafe.Pointer, pt *C.struct_VSC_point) C.int {
-	var items map[string]uint64 = *(*map[string]uint64)(unsafe.Pointer(priv))
+	var items map[string]uint64
 	var name string
-	if pt == nil {
+	if pt == nil || priv == nil {
 		return 1
 	}
+	items = *(*map[string]uint64)(unsafe.Pointer(priv))
 	_type := C.GoString(&pt.section.fantom._type[0])
 	ident := C.GoString(&pt.section.fantom.ident[0])
 	field := C.GoString(pt.desc.name)
