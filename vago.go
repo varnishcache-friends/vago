@@ -39,6 +39,12 @@ const (
 	identmask     = ^(uint32(3) << 30)
 )
 
+var ptrHandles *handleList
+
+func init() {
+	ptrHandles = newHandle()
+}
+
 // A Varnish struct represents a handler for Varnish Shared Memory and
 // Varnish Shared Log.
 type Varnish struct {
@@ -185,9 +191,11 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, log
 // Stats returns a map with all stat counters and their values.
 func (v *Varnish) Stats() map[string]uint64 {
 	items := make(map[string]uint64)
+	handle := ptrHandles.track(items)
+	defer ptrHandles.untrack(handle)
 	C.VSC_Iter(v.vsm, nil,
 		(*C.VSC_iter_f)(unsafe.Pointer(C.listCallback)),
-		unsafe.Pointer(&items))
+		handle)
 	return items
 }
 
@@ -198,25 +206,26 @@ func (v *Varnish) Stat(s string) uint64 {
 }
 
 //export listCallback
-func listCallback(priv unsafe.Pointer, pt *C.struct_VSC_point) C.int {
-	var items map[string]uint64
+func listCallback(handle unsafe.Pointer, pt *C.struct_VSC_point) C.int {
+	priv := ptrHandles.get(handle)
 	var name string
 	if pt == nil || priv == nil {
 		return 1
 	}
-	items = *(*map[string]uint64)(unsafe.Pointer(priv))
 	_type := C.GoString(&pt.section.fantom._type[0])
 	ident := C.GoString(&pt.section.fantom.ident[0])
 	field := C.GoString(pt.desc.name)
 	value := *(*uint64)(unsafe.Pointer(pt.ptr))
-
 	s := fmt.Sprint(_type)
 	if ident != "" {
 		name = fmt.Sprint(s, ".", ident, ".", field)
 	} else {
 		name = fmt.Sprint(s, ".", field)
 	}
-
+	items, ok := priv.(map[string]uint64)
+	if !ok {
+		return 1
+	}
 	items[name] = value
 	return 0
 }
