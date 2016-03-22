@@ -108,14 +108,13 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 	if query != "" {
 		cs := C.CString(query)
 		defer C.free(unsafe.Pointer(cs))
-		v.vslq = C.VSLQ_New(v.vsl, nil, grouping, cs)
+		v.vslq = C.VSLQ_New(v.vsl, &v.cursor, grouping, cs)
 	} else {
-		v.vslq = C.VSLQ_New(v.vsl, nil, grouping, nil)
+		v.vslq = C.VSLQ_New(v.vsl, &v.cursor, grouping, nil)
 	}
 	if v.vslq == nil {
 		return errors.New(C.GoString(C.VSL_Error(v.vsl)))
 	}
-	C.VSLQ_SetCursor((*v).vslq, &v.cursor)
 	for {
 		i := C.VSLQ_Dispatch(v.vslq,
 			(*C.VSLQ_dispatch_f)(unsafe.Pointer(C.dispatchCallback)),
