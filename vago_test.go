@@ -46,14 +46,24 @@ func TestStats(t *testing.T) {
 	}
 }
 
-func TestStat(t *testing.T) {
+func TestStatFail(t *testing.T) {
 	v, err := Open("")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer v.Close()
-	uptime := v.Stat("MAIN.uptime")
-	if uptime < 0 {
-		t.Fatal("Expected value > 0")
+	if _, ok := v.Stat("foo"); ok {
+		t.Fatal("Expected false")
+	}
+}
+
+func TestStatOK(t *testing.T) {
+	v, err := Open("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer v.Close()
+	if _, ok := v.Stat("MAIN.uptime"); !ok {
+		t.Fatal("Expected some value")
 	}
 }

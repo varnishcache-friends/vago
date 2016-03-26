@@ -198,10 +198,12 @@ func (v *Varnish) Stats() map[string]uint64 {
 	return items
 }
 
-// Stat takes a counter and returns its value.
-func (v *Varnish) Stat(s string) uint64 {
+// Stat takes a Varnish stat field and returns its value and true if found,
+// 0 and false otherwise.
+func (v *Varnish) Stat(s string) (uint64, bool) {
 	stats := v.Stats()
-	return stats[s]
+	value, ok := stats[s]
+	return value, ok
 }
 
 //export listCallback
