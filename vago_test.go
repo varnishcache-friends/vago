@@ -27,6 +27,7 @@ func TestLog(t *testing.T) {
 	}
 	v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
 		if vxid == 0 && tag == "CLI" && _type == "-" && strings.Contains(data, "PONG") {
+			t.Log("Got PONG")
 			return -1
 		}
 		return 0

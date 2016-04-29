@@ -96,6 +96,8 @@ type LogCallback func(vxid uint32, tag, _type, data string) int
 // and grouping.
 func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) error {
 	v.vsl = C.VSL_New()
+	handle := ptrHandles.track(logCallback)
+	defer ptrHandles.untrack(handle)
 	for {
 		v.cursor = C.VSL_CursorVSM(v.vsl, v.vsm, 1)
 		if v.cursor != nil {
@@ -118,7 +120,7 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 	for {
 		i := C.VSLQ_Dispatch(v.vslq,
 			(*C.VSLQ_dispatch_f)(unsafe.Pointer(C.dispatchCallback)),
-			unsafe.Pointer(&logCallback))
+			handle)
 		if i == 1 {
 			continue
 		}
@@ -136,8 +138,9 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 // dispatchCallback walks through the transaction and calls a function of
 // type LogCallback.
 //export dispatchCallback
-func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, logCallback unsafe.Pointer) C.int {
+func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, handle unsafe.Pointer) C.int {
 	var tx = uintptr(unsafe.Pointer(pt))
+	logCallback := ptrHandles.get(handle)
 	for {
 		if tx == 0 {
 			break
@@ -177,7 +180,7 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, log
 			lenght := C.int(s[0] & lenmask)
 			u32 := cui32tosl((*t).c.rec.ptr, (lenght+2)*4)
 			data := ui32tostr(&u32[2], lenght)
-			ret := (*(*LogCallback)(logCallback))(vxid, tag, _type, data)
+			ret := logCallback.(LogCallback)(vxid, tag, _type, data)
 			if ret != 0 {
 				return C.int(ret)
 			}
