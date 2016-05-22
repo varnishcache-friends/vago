@@ -76,6 +76,7 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 //export dispatchCallback
 func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, handle unsafe.Pointer) C.int {
 	var tx = uintptr(unsafe.Pointer(pt))
+	var _type string
 	logCallback := ptrHandles.get(handle)
 	for {
 		if tx == 0 {
@@ -96,26 +97,20 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, han
 			if C.VSL_Match(vsl, (*t).c) == 0 {
 				continue
 			}
-
-			// ptr is an uint32_t pointer array, we use GoBytes to
-			// back it in a Go byte slice to retrieve its 32 bits
-			// elements.
-			b := C.GoBytes(unsafe.Pointer((*t).c.rec.ptr), 8)
-			s := make([]uint32, 2)
-			for i := range s {
-				s[i] = uint32(binary.LittleEndian.Uint32(b[i*4 : (i+1)*4]))
-			}
-			tag := C.GoString(C.VSL_tags[s[0]>>24])
-			vxid := s[1] & identmask
-			_type := "-"
-			if s[1]&(clientmarker) != 0 {
+			s1 := cui32tosl((*t).c.rec.ptr, 8)
+			tag := C.GoString(C.VSL_tags[s1[0]>>24])
+			vxid := s1[1] & identmask
+			lenght := C.int(s1[0] & lenmask)
+			switch {
+			case s1[1]&(clientmarker) != 0:
 				_type = "c"
-			} else if s[1]&(backendmarker) != 0 {
+			case s1[1]&(backendmarker) != 0:
 				_type = "b"
+			default:
+				_type = "-"
 			}
-			lenght := C.int(s[0] & lenmask)
-			u32 := cui32tosl((*t).c.rec.ptr, (lenght+2)*4)
-			data := ui32tostr(&u32[2], lenght)
+			s2 := cui32tosl((*t).c.rec.ptr, (lenght+2)*4)
+			data := ui32tostr(&s2[2], lenght)
 			ret := logCallback.(LogCallback)(vxid, tag, _type, data)
 			if ret != 0 {
 				return C.int(ret)
