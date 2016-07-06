@@ -133,5 +133,5 @@ func cui32tosl(ptr *C.uint32_t, lenght C.int) []uint32 {
 
 // Convert uint32 to string
 func ui32tostr(val *uint32, lenght C.int) string {
-	return C.GoStringN((*C.char)(unsafe.Pointer(val)), lenght)
+	return C.GoStringN((*C.char)(unsafe.Pointer(val)), lenght-1)
 }
