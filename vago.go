@@ -40,6 +40,7 @@ type Varnish struct {
 	vsl    *C.struct_VSL_data
 	vslq   *C.struct_VSLQ
 	cursor *C.struct_VSL_cursor
+	alive  bool
 }
 
 var ptrHandles *handleList
@@ -66,11 +67,18 @@ func Open(path string) (*Varnish, error) {
 	if C.VSM_Open(v.vsm) < 0 {
 		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 	}
+	v.alive = true
 	return v, nil
+}
+
+// Stop stops processing Varnish events.
+func (v *Varnish) Stop() {
+	v.alive = false
 }
 
 // Close closes and unmaps the Varnish Shared Memory.
 func (v *Varnish) Close() {
+	v.Stop()
 	if v.vslq != nil {
 		C.VSLQ_Delete(&v.vslq)
 	}
