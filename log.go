@@ -107,7 +107,7 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, han
 			s1 := cui32tosl((*t).c.rec.ptr, 8)
 			tag := C.GoString(C.VSL_tags[s1[0]>>24])
 			vxid := s1[1] & identmask
-			lenght := C.int(s1[0] & lenmask)
+			length := C.int(s1[0] & lenmask)
 			switch {
 			case s1[1]&(clientmarker) != 0:
 				_type = "c"
@@ -116,8 +116,8 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, han
 			default:
 				_type = "-"
 			}
-			s2 := cui32tosl((*t).c.rec.ptr, (lenght+2)*4)
-			data := ui32tostr(&s2[2], lenght)
+			s2 := cui32tosl((*t).c.rec.ptr, (length+2)*4)
+			data := ui32tostr(&s2[2], length)
 			ret := logCallback.(LogCallback)(vxid, tag, _type, data)
 			if ret != 0 {
 				return C.int(ret)
@@ -129,9 +129,9 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, han
 }
 
 // Convert C.uint32_t to slice of uint32
-func cui32tosl(ptr *C.uint32_t, lenght C.int) []uint32 {
-	b := C.GoBytes(unsafe.Pointer(ptr), lenght)
-	s := make([]uint32, lenght/4)
+func cui32tosl(ptr *C.uint32_t, length C.int) []uint32 {
+	b := C.GoBytes(unsafe.Pointer(ptr), length)
+	s := make([]uint32, length/4)
 	for i := range s {
 		s[i] = uint32(binary.LittleEndian.Uint32(b[i*4 : (i+1)*4]))
 	}
@@ -139,6 +139,6 @@ func cui32tosl(ptr *C.uint32_t, lenght C.int) []uint32 {
 }
 
 // Convert uint32 to string
-func ui32tostr(val *uint32, lenght C.int) string {
-	return C.GoStringN((*C.char)(unsafe.Pointer(val)), lenght-1)
+func ui32tostr(val *uint32, length C.int) string {
+	return C.GoStringN((*C.char)(unsafe.Pointer(val)), length-1)
 }
