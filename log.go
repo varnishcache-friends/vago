@@ -24,6 +24,13 @@ import (
 	"unsafe"
 )
 
+const (
+	lenmask       = 0xffff
+	clientmarker  = uint32(1) << 30
+	backendmarker = uint32(1) << 31
+	identmask     = ^(uint32(3) << 30)
+)
+
 // LogCallback defines a callback function.
 // It's used by Log.
 type LogCallback func(vxid uint32, tag, _type, data string) int

@@ -26,11 +26,6 @@ const (
 	VXID = C.VSL_g_vxid
 	REQ  = C.VSL_g_request
 	SESS = C.VSL_g_session
-
-	lenmask       = 0xffff
-	clientmarker  = uint32(1) << 30
-	backendmarker = uint32(1) << 31
-	identmask     = ^(uint32(3) << 30)
 )
 
 // A Varnish struct represents a handler for Varnish Shared Memory and
