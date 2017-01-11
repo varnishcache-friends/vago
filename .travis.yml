@@ -12,7 +12,7 @@ before_install:
   - echo "deb https://repo.varnish-cache.org/ubuntu/ precise varnish-$VER" |
     sudo tee /etc/apt/sources.list.d/varnish-cache.list
   - sudo apt-get update
-  - sudo apt-get install varnish libvarnishapi-dev
+  - sudo apt-get install varnish varnish-dev
   - sudo usermod -a -G varnish $USER
 script:
   - sudo -E su $USER -c "$(which go) test -v"
