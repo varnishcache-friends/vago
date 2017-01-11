@@ -3,7 +3,6 @@ go:
   - 1.6
   - 1.7
 env:
-  - VER=4.0
   - VER=4.1
 before_install:
   - sudo apt-get update
