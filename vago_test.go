@@ -2,7 +2,9 @@ package vago
 
 import (
 	"strings"
+	"sync"
 	"testing"
+	"time"
 )
 
 func TestOpenFail(t *testing.T) {
@@ -32,6 +34,30 @@ func TestLog(t *testing.T) {
 		}
 		return 0
 	})
+	v.Close()
+}
+
+func TestLogGoroutineClose(t *testing.T) {
+	var wg sync.WaitGroup
+
+	v, err := Open("")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	wg.Add(1)
+	go func(v *Varnish) {
+		defer wg.Done()
+
+		v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
+			return 0
+		})
+	}(v)
+
+	time.Sleep(10 * time.Millisecond)
+
+	v.Stop()
+	wg.Wait()
 	v.Close()
 }
 
