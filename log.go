@@ -60,19 +60,28 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 	if v.vslq == nil {
 		return errors.New(C.GoString(C.VSL_Error(v.vsl)))
 	}
+DispatchLoop:
 	for v.alive {
 		i := C.VSLQ_Dispatch(v.vslq,
 			(*C.VSLQ_dispatch_f)(unsafe.Pointer(C.dispatchCallback)),
 			handle)
-		if i == 1 {
+		switch i {
+		case 1:
+			// Call again
 			continue
-		}
-		if i == 0 {
+		case 0:
+			// Nothing to do but wait
 			time.Sleep(10 * time.Millisecond)
 			continue
-		}
-		if i == -1 {
-			break
+		case -1:
+			// EOF
+			break DispatchLoop
+		case -2:
+			// Abandoned
+			return errors.New("Log abandoned")
+		default:
+			// Overrun
+			return errors.New("Log overrun")
 		}
 	}
 	return nil
