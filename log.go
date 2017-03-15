@@ -31,6 +31,11 @@ const (
 	identmask     = ^(uint32(3) << 30)
 )
 
+var (
+	ErrAbandonedorClosed = errors.New("Remote abandoned or closed")
+	ErrOverrun           = errors.New("Overrun")
+)
+
 // LogCallback defines a callback function.
 // It's used by Log.
 type LogCallback func(vxid uint32, tag, _type, data string) int
@@ -64,15 +69,22 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 		i := C.VSLQ_Dispatch(v.vslq,
 			(*C.VSLQ_dispatch_f)(unsafe.Pointer(C.dispatchCallback)),
 			handle)
-		if i == 1 {
+
+		if i == 1 { /* Call again */
 			continue
 		}
-		if i == 0 {
+		if i == 0 { /* No more records available */
 			time.Sleep(1000)
 			continue
 		}
-		if i == -1 {
+		if i == -1 { /* EOF */
 			break
+		}
+		if i == -2 { /* Abandoned */
+			return ErrAbandonedorClosed
+		}
+		if i == -3 { /* Overrun */
+			return ErrOverrun
 		}
 	}
 	return nil
