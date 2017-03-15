@@ -60,7 +60,7 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 	if v.vslq == nil {
 		return errors.New(C.GoString(C.VSL_Error(v.vsl)))
 	}
-	for v.alive {
+	for v.alive() {
 		i := C.VSLQ_Dispatch(v.vslq,
 			(*C.VSLQ_dispatch_f)(unsafe.Pointer(C.dispatchCallback)),
 			handle)

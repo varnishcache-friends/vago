@@ -17,6 +17,7 @@ import "C"
 
 import (
 	"errors"
+	"sync"
 	"unsafe"
 )
 
@@ -35,7 +36,9 @@ type Varnish struct {
 	vsl    *C.struct_VSL_data
 	vslq   *C.struct_VSLQ
 	cursor *C.struct_VSL_cursor
-	alive  bool
+	mu     sync.Mutex
+	closed bool
+	done   chan struct{}
 }
 
 var ptrHandles *handleList
@@ -62,13 +65,31 @@ func Open(path string) (*Varnish, error) {
 	if C.VSM_Open(v.vsm) < 0 {
 		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 	}
-	v.alive = true
+
+	v.done = make(chan struct{})
+	v.closed = false
+
 	return v, nil
+}
+
+func (v *Varnish) alive() bool {
+	select {
+	case <-v.done:
+		return false
+	default:
+		return true
+	}
 }
 
 // Stop stops processing Varnish events.
 func (v *Varnish) Stop() {
-	v.alive = false
+	v.mu.Lock()
+	defer v.mu.Unlock()
+
+	if !v.closed {
+		close(v.done)
+		v.closed = true
+	}
 }
 
 // Close closes and unmaps the Varnish Shared Memory.
