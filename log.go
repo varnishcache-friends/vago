@@ -68,7 +68,7 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 			continue
 		}
 		if i == 0 {
-			time.Sleep(1000)
+			time.Sleep(10 * time.Millisecond)
 			continue
 		}
 		if i == -1 {
