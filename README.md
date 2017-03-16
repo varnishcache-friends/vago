@@ -14,7 +14,7 @@ is located before running `go get`. For example:
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 ```
 
-## Installation
+## Installation
 ```
 go get github.com/phenomenes/vago
 ```
