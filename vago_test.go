@@ -13,7 +13,7 @@ func TestOpenFail(t *testing.T) {
 	}
 	_, err := Open(&c)
 	if err == nil {
-		t.Fatal("Expected nil")
+		t.Fatal("Expected non-nil")
 	}
 }
 
@@ -21,7 +21,7 @@ func TestOpenOK(t *testing.T) {
 	c := Config{}
 	v, err := Open(&c)
 	if err != nil {
-		t.Fatal("Expected non-nil")
+		t.Fatal("Expected nil")
 	}
 	v.Close()
 }
@@ -46,7 +46,7 @@ func TestLog(t *testing.T) {
 	c := Config{}
 	v, err := Open(&c)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("Expected nil")
 	}
 	v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
 		if vxid == 0 && tag == "CLI" && _type == "-" && strings.Contains(data, "PONG") {
@@ -63,20 +63,16 @@ func TestLogGoroutineClose(t *testing.T) {
 	c := Config{}
 	v, err := Open(&c)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("Expected nil")
 	}
-
 	wg.Add(1)
 	go func(v *Varnish) {
 		defer wg.Done()
-
 		v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
 			return 0
 		})
 	}(v)
-
 	time.Sleep(10 * time.Millisecond)
-
 	v.Stop()
 	wg.Wait()
 	v.Close()
@@ -86,7 +82,7 @@ func TestStats(t *testing.T) {
 	c := Config{}
 	v, err := Open(&c)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("Expected nil")
 	}
 	defer v.Close()
 	items := v.Stats()
@@ -99,7 +95,7 @@ func TestStatFail(t *testing.T) {
 	c := Config{}
 	v, err := Open(&c)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("Expected nil")
 	}
 	defer v.Close()
 	if _, ok := v.Stat("foo"); ok {
@@ -111,7 +107,7 @@ func TestStatOK(t *testing.T) {
 	c := Config{}
 	v, err := Open(&c)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatal("Expected nil")
 	}
 	defer v.Close()
 	if _, ok := v.Stat("MAIN.uptime"); !ok {
