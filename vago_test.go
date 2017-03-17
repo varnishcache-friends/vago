@@ -78,6 +78,21 @@ func TestLogGoroutineClose(t *testing.T) {
 	v.Close()
 }
 
+func TestInvalidQuery(t *testing.T) {
+	c := Config{}
+	v, err := Open(&c)
+	if err != nil {
+		t.Fatal("Expected nil")
+	}
+	defer v.Close()
+	err = v.Log("nonexistent", RAW, func(vxid uint32, tag, _type, data string) int {
+		return -1
+	})
+	if _, ok := err.(ErrVSL); !ok {
+		t.Fatal("Expected ErrVSL")
+	}
+}
+
 func TestStats(t *testing.T) {
 	c := Config{}
 	v, err := Open(&c)

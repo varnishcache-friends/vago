@@ -31,6 +31,15 @@ const (
 	identmask     = ^(uint32(3) << 30)
 )
 
+var (
+	ErrAbandoned = errors.New("log abandoned")
+	ErrOverrun   = errors.New("log overrun")
+)
+
+type ErrVSL string
+
+func (e ErrVSL) Error() string { return string(e) }
+
 // LogCallback defines a callback function.
 // It's used by Log.
 type LogCallback func(vxid uint32, tag, _type, data string) int
@@ -58,7 +67,7 @@ func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) er
 		v.vslq = C.VSLQ_New(v.vsl, &v.cursor, grouping, nil)
 	}
 	if v.vslq == nil {
-		return errors.New(C.GoString(C.VSL_Error(v.vsl)))
+		return ErrVSL(C.GoString(C.VSL_Error(v.vsl)))
 	}
 DispatchLoop:
 	for v.alive() {
@@ -78,10 +87,10 @@ DispatchLoop:
 			break DispatchLoop
 		case -2:
 			// Abandoned
-			return errors.New("Log abandoned")
+			return ErrAbandoned
 		default:
 			// Overrun
-			return errors.New("Log overrun")
+			return ErrOverrun
 		}
 	}
 	return nil
