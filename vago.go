@@ -18,6 +18,7 @@ import "C"
 import (
 	"errors"
 	"sync"
+	"time"
 	"unsafe"
 )
 
@@ -41,6 +42,12 @@ type Varnish struct {
 	done   chan struct{}
 }
 
+// Config parameters to connect to a Varnish instance.
+type Config struct {
+	Path    string        // Path to Varnish Shared Memory file
+	Timeout time.Duration // VSM connection timeout in milliseconds
+}
+
 var ptrHandles *handleList
 
 func init() {
@@ -49,21 +56,29 @@ func init() {
 
 // Open opens a Varnish Shared Memory file. If successful, returns a new
 // Varnish.
-func Open(path string) (*Varnish, error) {
+func Open(c *Config) (*Varnish, error) {
 	v := &Varnish{}
 	v.vsm = C.VSM_New()
 	if v.vsm == nil {
 		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 	}
-	if path != "" {
-		cs := C.CString(path)
+	if c.Path != "" {
+		cs := C.CString(c.Path)
 		defer C.free(unsafe.Pointer(cs))
 		if C.VSM_n_Arg(v.vsm, cs) != 1 {
 			return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 		}
 	}
-	if C.VSM_Open(v.vsm) < 0 {
-		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
+	end := time.Now().Add(c.Timeout * time.Millisecond)
+	for {
+		if C.VSM_Open(v.vsm) >= 0 {
+			break
+		}
+		if c.Timeout <= 0 || time.Now().After(end) {
+			return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
+		}
+		C.VSM_ResetError(v.vsm)
+		time.Sleep(500 * time.Millisecond)
 	}
 
 	v.done = make(chan struct{})

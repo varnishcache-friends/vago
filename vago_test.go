@@ -8,22 +8,43 @@ import (
 )
 
 func TestOpenFail(t *testing.T) {
-	_, err := Open("/nonexistent")
+	c := Config{
+		Path: "/nonexistent",
+	}
+	_, err := Open(&c)
 	if err == nil {
 		t.Fatal("Expected nil")
 	}
 }
 
 func TestOpenOK(t *testing.T) {
-	v, err := Open("")
+	c := Config{}
+	v, err := Open(&c)
 	if err != nil {
-		t.Fatal("Expected non nil")
+		t.Fatal("Expected non-nil")
 	}
 	v.Close()
 }
 
+func TestOpenFailedTimeout(t *testing.T) {
+	c := Config{
+		Timeout: 2000,
+		Path:    "/nonexistent",
+	}
+	start := time.Now()
+	_, err := Open(&c)
+	end := time.Now()
+	if err == nil {
+		t.Fatal("Expected non-nil")
+	}
+	if end.Sub(start) < c.Timeout*time.Millisecond {
+		t.Fatal("Expected timeout >= c.Timeout")
+	}
+}
+
 func TestLog(t *testing.T) {
-	v, err := Open("")
+	c := Config{}
+	v, err := Open(&c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,8 +60,8 @@ func TestLog(t *testing.T) {
 
 func TestLogGoroutineClose(t *testing.T) {
 	var wg sync.WaitGroup
-
-	v, err := Open("")
+	c := Config{}
+	v, err := Open(&c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -62,7 +83,8 @@ func TestLogGoroutineClose(t *testing.T) {
 }
 
 func TestStats(t *testing.T) {
-	v, err := Open("")
+	c := Config{}
+	v, err := Open(&c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +96,8 @@ func TestStats(t *testing.T) {
 }
 
 func TestStatFail(t *testing.T) {
-	v, err := Open("")
+	c := Config{}
+	v, err := Open(&c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,7 +108,8 @@ func TestStatFail(t *testing.T) {
 }
 
 func TestStatOK(t *testing.T) {
-	v, err := Open("")
+	c := Config{}
+	v, err := Open(&c)
 	if err != nil {
 		t.Fatal(err)
 	}
