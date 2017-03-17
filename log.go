@@ -29,6 +29,10 @@ const (
 	clientmarker  = uint32(1) << 30
 	backendmarker = uint32(1) << 31
 	identmask     = ^(uint32(3) << 30)
+	// Cursor options
+	COPT_TAIL     = 1 << 0
+	COPT_BATCH    = 1 << 1
+	COPT_TAILSTOP = 1 << 2
 )
 
 var (
@@ -46,12 +50,12 @@ type LogCallback func(vxid uint32, tag, _type, data string) int
 
 // Log calls the given callback for any transactions matching the query
 // and grouping.
-func (v *Varnish) Log(query string, grouping uint32, logCallback LogCallback) error {
+func (v *Varnish) Log(query string, grouping uint32, copt uint, logCallback LogCallback) error {
 	v.vsl = C.VSL_New()
 	handle := ptrHandles.track(logCallback)
 	defer ptrHandles.untrack(handle)
 	for {
-		v.cursor = C.VSL_CursorVSM(v.vsl, v.vsm, 1)
+		v.cursor = C.VSL_CursorVSM(v.vsl, v.vsm, C.uint(copt))
 		if v.cursor != nil {
 			break
 		}

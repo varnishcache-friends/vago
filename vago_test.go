@@ -49,7 +49,7 @@ func TestLog(t *testing.T) {
 		t.Fatal("Expected nil")
 	}
 	defer v.Close()
-	err = v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
+	err = v.Log("", RAW, COPT_TAIL|COPT_BATCH, func(vxid uint32, tag, _type, data string) int {
 		if vxid == 0 && tag == "CLI" && _type == "-" && strings.Contains(data, "PONG") {
 			return -1
 		}
@@ -70,7 +70,7 @@ func TestLogGoroutineClose(t *testing.T) {
 	wg.Add(1)
 	go func(v *Varnish) {
 		defer wg.Done()
-		err := v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
+		err := v.Log("", RAW, COPT_TAIL|COPT_BATCH, func(vxid uint32, tag, _type, data string) int {
 			return -1
 		})
 		if err != nil {
@@ -90,7 +90,7 @@ func TestInvalidQuery(t *testing.T) {
 		t.Fatal("Expected nil")
 	}
 	defer v.Close()
-	err = v.Log("nonexistent", RAW, func(vxid uint32, tag, _type, data string) int {
+	err = v.Log("nonexistent", RAW, COPT_TAIL|COPT_BATCH, func(vxid uint32, tag, _type, data string) int {
 		return -1
 	})
 	if _, ok := err.(ErrVSL); !ok {
