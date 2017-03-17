@@ -48,14 +48,16 @@ func TestLog(t *testing.T) {
 	if err != nil {
 		t.Fatal("Expected nil")
 	}
-	v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
+	defer v.Close()
+	err = v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
 		if vxid == 0 && tag == "CLI" && _type == "-" && strings.Contains(data, "PONG") {
-			t.Log("Got PONG")
 			return -1
 		}
 		return 0
 	})
-	v.Close()
+	if err != nil {
+		t.Fatal("Expected nil")
+	}
 }
 
 func TestLogGoroutineClose(t *testing.T) {
@@ -68,9 +70,12 @@ func TestLogGoroutineClose(t *testing.T) {
 	wg.Add(1)
 	go func(v *Varnish) {
 		defer wg.Done()
-		v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
-			return 0
+		err := v.Log("", RAW, func(vxid uint32, tag, _type, data string) int {
+			return -1
 		})
+		if err != nil {
+			t.Fatal("Expected nil")
+		}
 	}(v)
 	time.Sleep(10 * time.Millisecond)
 	v.Stop()
