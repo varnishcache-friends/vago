@@ -61,7 +61,8 @@ import (
 
 func main() {
 	// Open the default Varnish Shared Memory file
-	v, err := vago.Open("")
+	c := vago.Config{}
+	v, err := vago.Open(&c)
 	if err != nil {
 		fmt.Println(err)
 		return
