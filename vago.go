@@ -17,6 +17,7 @@ import "C"
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 	"unsafe"
@@ -33,7 +34,8 @@ const (
 // A Varnish struct represents a handler for Varnish Shared Memory and
 // Varnish Shared Log.
 type Varnish struct {
-	vsm    *C.struct_VSM_data
+	vsc    *C.struct_vsc
+	vsm    *C.struct_vsm
 	vsl    *C.struct_VSL_data
 	vslq   *C.struct_VSLQ
 	cursor *C.struct_VSL_cursor
@@ -44,8 +46,11 @@ type Varnish struct {
 
 // Config parameters to connect to a Varnish instance.
 type Config struct {
-	Path    string        // Path to Varnish Shared Memory file
-	Timeout time.Duration // VSM connection timeout in milliseconds
+	// Path to Varnish Shared Memory file
+	Path string
+	// VSM connection timeout in milliseconds
+	// -1 for no timeout
+	Timeout time.Duration
 }
 
 var ptrHandles *handleList
@@ -57,28 +62,43 @@ func init() {
 // Open opens a Varnish Shared Memory file. If successful, returns a new
 // Varnish.
 func Open(c *Config) (*Varnish, error) {
-	v := &Varnish{}
+	v := &Varnish{closed: true}
 	v.vsm = C.VSM_New()
 	if v.vsm == nil {
+		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
+	}
+	v.vsc = C.VSC_New()
+	if v.vsc == nil {
+		defer v.Close()
 		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 	}
 	if c.Path != "" {
 		cs := C.CString(c.Path)
 		defer C.free(unsafe.Pointer(cs))
-		if C.VSM_n_Arg(v.vsm, cs) != 1 {
+		arg := C.CString("n")
+		defer C.free(unsafe.Pointer(arg))
+		if C.VSM_Arg(v.vsm, *arg, cs) != 1 {
+			defer v.Close()
 			return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 		}
 	}
-	end := time.Now().Add(c.Timeout * time.Millisecond)
-	for {
-		if C.VSM_Open(v.vsm) >= 0 {
-			break
-		}
-		if c.Timeout <= 0 || time.Now().After(end) {
-			return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
-		}
-		C.VSM_ResetError(v.vsm)
-		time.Sleep(500 * time.Millisecond)
+	var cs *C.char
+	switch {
+	case c.Timeout < 0:
+		cs = C.CString("off")
+	default:
+		cs = C.CString(fmt.Sprintf("%d", c.Timeout/1000))
+	}
+	defer C.free(unsafe.Pointer(cs))
+	arg := C.CString("t")
+	defer C.free(unsafe.Pointer(arg))
+	if C.VSM_Arg(v.vsm, *arg, cs) != 1 {
+		defer v.Close()
+		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
+	}
+	if C.VSM_Attach(v.vsm, -1) != 0 {
+		defer v.Close()
+		return nil, errors.New(C.GoString(C.VSM_Error(v.vsm)))
 	}
 
 	v.done = make(chan struct{})
@@ -116,7 +136,10 @@ func (v *Varnish) Close() {
 	if v.vsl != nil {
 		C.VSL_Delete(v.vsl)
 	}
+	if v.vsc != nil {
+		C.VSC_Destroy(&v.vsc, v.vsm)
+	}
 	if v.vsm != nil {
-		C.VSM_Delete(v.vsm)
+		C.VSM_Destroy(&v.vsm)
 	}
 }
