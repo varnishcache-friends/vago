@@ -21,6 +21,7 @@ func TestOpenOK(t *testing.T) {
 	c := Config{}
 	v, err := Open(&c)
 	if err != nil {
+		t.Log(err)
 		t.Fatal("Expected nil")
 	}
 	v.Close()

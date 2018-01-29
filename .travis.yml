@@ -1,13 +1,11 @@
 dist: trusty
 language: go
 go:
-  - 1.6
   - 1.7
   - 1.8
+  - 1.9
 env:
-  - VER=4.1
-  - VER=5.0
-  - VER=5.1
+  - VER=5.2
 before_install:
   - curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${VER/./}/script.deb.sh | sudo bash
   - sudo apt-get install varnish=${VER}.* varnish-dev=${VER}.*

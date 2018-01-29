@@ -18,7 +18,6 @@ int listCallback(void *priv, struct VSC_point *);
 import "C"
 
 import (
-	"fmt"
 	"unsafe"
 )
 
@@ -27,7 +26,7 @@ func (v *Varnish) Stats() map[string]uint64 {
 	items := make(map[string]uint64)
 	handle := ptrHandles.track(items)
 	defer ptrHandles.untrack(handle)
-	C.VSC_Iter(v.vsm, nil,
+	C.VSC_Iter(v.vsc, v.vsm,
 		(*C.VSC_iter_f)(unsafe.Pointer(C.listCallback)),
 		handle)
 	return items
@@ -41,23 +40,15 @@ func (v *Varnish) Stat(s string) (uint64, bool) {
 	return value, ok
 }
 
+// do_list_cb()
 //export listCallback
 func listCallback(handle unsafe.Pointer, pt *C.struct_VSC_point) C.int {
 	priv := ptrHandles.get(handle)
-	var name string
 	if pt == nil || priv == nil {
 		return 1
 	}
-	_type := C.GoString(&pt.section.fantom._type[0])
-	ident := C.GoString(&pt.section.fantom.ident[0])
-	field := C.GoString(pt.desc.name)
+	name := C.GoString(pt.name)
 	value := *(*uint64)(unsafe.Pointer(pt.ptr))
-	s := fmt.Sprint(_type)
-	if ident != "" {
-		name = fmt.Sprint(s, ".", ident, ".", field)
-	} else {
-		name = fmt.Sprint(s, ".", field)
-	}
 	items, ok := priv.(map[string]uint64)
 	if !ok {
 		return 1
