@@ -1,4 +1,4 @@
-# vago v1.2.0 (17-Feb-2018
+# vago v1.2.0 (17-Feb-2018)
 
 ## Changes
 
