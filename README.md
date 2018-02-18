@@ -1,7 +1,10 @@
 [![Build Status](https://travis-ci.org/phenomenes/vago.svg?branch=master)](https://travis-ci.org/phenomenes/vago)
 
 # vago
-Go bindings for the Varnish API using cgo.
+
+Go bindings for Varnish 5.2.x using cgo.
+
+For Varnish 4.1 refer to branch `varnish-4.1`.
 
 ## Requirements
 
