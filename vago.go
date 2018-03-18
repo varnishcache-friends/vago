@@ -31,17 +31,24 @@ const (
 	SESS = C.VSL_g_session
 )
 
+const (
+	none tribool = iota
+	Yes
+	No
+)
+
 // A Varnish struct represents a handler for Varnish Shared Memory and
 // Varnish Shared Log.
 type Varnish struct {
-	vsc    *C.struct_vsc
-	vsm    *C.struct_vsm
-	vsl    *C.struct_VSL_data
-	vslq   *C.struct_VSLQ
-	cursor *C.struct_VSL_cursor
-	mu     sync.Mutex
-	closed bool
-	done   chan struct{}
+	vsc         *C.struct_vsc
+	vsm         *C.struct_vsm
+	vsl         *C.struct_VSL_data
+	vslq        *C.struct_VSLQ
+	cursor      *C.struct_VSL_cursor
+	mu          sync.Mutex
+	closed      bool
+	done        chan struct{}
+	vslReattach bool
 }
 
 // Config parameters to connect to a Varnish instance.
@@ -51,7 +58,12 @@ type Config struct {
 	// VSM connection timeout in milliseconds
 	// -1 for no timeout
 	Timeout time.Duration
+	// Whether to reacquire the to the log
+	// Values can be Yes or No. Default Yes
+	VslReattach tribool
 }
+
+type tribool uint8
 
 var ptrHandles *handleList
 
@@ -103,6 +115,9 @@ func Open(c *Config) (*Varnish, error) {
 
 	v.done = make(chan struct{})
 	v.closed = false
+	if c.VslReattach != No {
+		v.vslReattach = true
+	}
 
 	return v, nil
 }
