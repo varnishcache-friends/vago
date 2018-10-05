@@ -118,7 +118,7 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, han
 		for {
 			i := C.VSL_Next((*t).c)
 			if i < 0 {
-				return i
+				return C.int(i)
 			}
 			if i == 0 {
 				break
