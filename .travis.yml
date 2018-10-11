@@ -1,9 +1,9 @@
 dist: trusty
 language: go
 go:
-  - 1.9
-  - 1.10
-  - 1.11
+  - "1.9"
+  - "1.10"
+  - "1.11"
 env:
   - VER=5.2
 before_install:
