@@ -6,6 +6,7 @@ go:
   - "1.11"
 env:
   - VER=5.2
+  - VER=6.0
 before_install:
   - curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${VER/./}/script.deb.sh | sudo bash
   - sudo apt-get install varnish=${VER}.* varnish-dev=${VER}.*
