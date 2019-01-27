@@ -33,6 +33,8 @@ const (
 	COPT_TAIL     = 1 << 0
 	COPT_BATCH    = 1 << 1
 	COPT_TAILSTOP = 1 << 2
+	// VSM status bitmap
+	vsm_wrk_restarted = 1 << 11
 )
 
 var (
@@ -54,27 +56,38 @@ func (v *Varnish) Log(query string, grouping uint32, copt uint, logCallback LogC
 	v.vsl = C.VSL_New()
 	handle := ptrHandles.track(logCallback)
 	defer ptrHandles.untrack(handle)
-	for {
-		v.cursor = C.VSL_CursorVSM(v.vsl, v.vsm, C.uint(copt))
-		if v.cursor != nil {
-			break
-		}
-	}
 	if grouping < 0 || grouping > 4 {
 		grouping = VXID
 	}
 	if query != "" {
 		cs := C.CString(query)
 		defer C.free(unsafe.Pointer(cs))
-		v.vslq = C.VSLQ_New(v.vsl, &v.cursor, grouping, cs)
+		v.vslq = C.VSLQ_New(v.vsl, nil, grouping, cs)
 	} else {
-		v.vslq = C.VSLQ_New(v.vsl, &v.cursor, grouping, nil)
+		v.vslq = C.VSLQ_New(v.vsl, nil, grouping, nil)
 	}
 	if v.vslq == nil {
 		return ErrVSL(C.GoString(C.VSL_Error(v.vsl)))
 	}
+	hasCursor := -1
 DispatchLoop:
 	for v.alive() {
+		if v.vsm != nil && (C.VSM_Status(v.vsm)&vsm_wrk_restarted) != 0 {
+			if hasCursor < 1 {
+				C.VSLQ_SetCursor(v.vslq, nil)
+				hasCursor = 0
+			}
+		}
+		if v.vsm != nil && hasCursor < 1 {
+			// Reconnect VSM
+			v.cursor = C.VSL_CursorVSM(v.vsl, v.vsm, C.uint(copt))
+			if v.cursor == nil {
+				C.VSL_ResetError(v.vsl)
+				continue
+			}
+			hasCursor = 1
+			C.VSLQ_SetCursor(v.vslq, &v.cursor)
+		}
 		i := C.VSLQ_Dispatch(v.vslq,
 			(*C.VSLQ_dispatch_f)(unsafe.Pointer(C.dispatchCallback)),
 			handle)
@@ -91,12 +104,18 @@ DispatchLoop:
 			break DispatchLoop
 		case -2:
 			// Abandoned
-			return ErrAbandoned
+			if !v.vslReattach {
+				return ErrAbandoned
+			}
+			// Re-aquire the log cursor
+			C.VSLQ_SetCursor(v.vslq, nil)
+			hasCursor = 0
 		default:
 			// Overrun
 			return ErrOverrun
 		}
 	}
+
 	return nil
 }
 
