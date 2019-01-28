@@ -1,4 +1,4 @@
-dist: trusty
+dist: bionic
 language: go
 go:
   - "1.9"
@@ -6,9 +6,11 @@ go:
   - "1.11"
 env:
   - VER=5.2
+  - VER=6.0
 before_install:
   - curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${VER/./}/script.deb.sh | sudo bash
   - sudo apt-get install varnish=${VER}.* varnish-dev=${VER}.*
   - sudo usermod -a -G varnish $USER
 script:
   - sudo -E su $USER -c "$(which go) test -v"
+  - sudo -E su $USER -c "$(which go) vet -unsafeptr=false"
