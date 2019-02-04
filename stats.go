@@ -27,7 +27,7 @@ func (v *Varnish) Stats() map[string]uint64 {
 	handle := ptrHandles.track(items)
 	defer ptrHandles.untrack(handle)
 	C.VSC_Iter(v.vsc, v.vsm,
-		(*C.VSC_iter_f)(unsafe.Pointer(C.listCallback)),
+		(*C.VSC_iter_f)(C.listCallback),
 		handle)
 	return items
 }
