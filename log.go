@@ -34,7 +34,7 @@ const (
 	COPT_BATCH    = 1 << 1
 	COPT_TAILSTOP = 1 << 2
 	// VSM status bitmap
-	vsm_wrk_restarted = 1 << 11
+	vsmWrkRestarted = 1 << 11
 )
 
 var (
@@ -56,7 +56,7 @@ func (v *Varnish) Log(query string, grouping uint32, copt uint, logCallback LogC
 	v.vsl = C.VSL_New()
 	handle := ptrHandles.track(logCallback)
 	defer ptrHandles.untrack(handle)
-	if grouping < 0 || grouping > 4 {
+	if grouping > max {
 		grouping = VXID
 	}
 	if query != "" {
@@ -72,7 +72,7 @@ func (v *Varnish) Log(query string, grouping uint32, copt uint, logCallback LogC
 	hasCursor := -1
 DispatchLoop:
 	for v.alive() {
-		if v.vsm != nil && (C.VSM_Status(v.vsm)&vsm_wrk_restarted) != 0 {
+		if v.vsm != nil && (C.VSM_Status(v.vsm)&vsmWrkRestarted) != 0 {
 			if hasCursor < 1 {
 				C.VSLQ_SetCursor(v.vslq, nil)
 				hasCursor = 0
@@ -89,7 +89,7 @@ DispatchLoop:
 			C.VSLQ_SetCursor(v.vslq, &v.cursor)
 		}
 		i := C.VSLQ_Dispatch(v.vslq,
-			(*C.VSLQ_dispatch_f)(unsafe.Pointer(C.dispatchCallback)),
+			(*C.VSLQ_dispatch_f)(C.dispatchCallback),
 			handle)
 		switch i {
 		case 1:
@@ -107,7 +107,7 @@ DispatchLoop:
 			if !v.vslReattach {
 				return ErrAbandoned
 			}
-			// Re-aquire the log cursor
+			// Re-acquire the log cursor
 			C.VSLQ_SetCursor(v.vslq, nil)
 			hasCursor = 0
 		default:
@@ -174,7 +174,7 @@ func cui32tosl(ptr *C.uint32_t, length C.int) []uint32 {
 	b := C.GoBytes(unsafe.Pointer(ptr), length)
 	s := make([]uint32, length/4)
 	for i := range s {
-		s[i] = uint32(binary.LittleEndian.Uint32(b[i*4 : (i+1)*4]))
+		s[i] = binary.LittleEndian.Uint32(b[i*4 : (i+1)*4])
 	}
 	return s
 }

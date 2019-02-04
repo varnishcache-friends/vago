@@ -63,25 +63,27 @@ func TestLog(t *testing.T) {
 
 func TestLogGoroutineClose(t *testing.T) {
 	var wg sync.WaitGroup
+	var err error
+	var v *Varnish
 	c := Config{}
-	v, err := Open(&c)
+	v, err = Open(&c)
 	if err != nil {
 		t.Fatal("Expected nil")
 	}
 	wg.Add(1)
 	go func(v *Varnish) {
 		defer wg.Done()
-		err := v.Log("", RAW, COPT_TAIL|COPT_BATCH, func(vxid uint32, tag, _type, data string) int {
+		err = v.Log("", RAW, COPT_TAIL|COPT_BATCH, func(vxid uint32, tag, _type, data string) int {
 			return -1
 		})
-		if err != nil {
-			t.Fatal("Expected nil")
-		}
 	}(v)
 	time.Sleep(10 * time.Millisecond)
 	v.Stop()
 	wg.Wait()
 	v.Close()
+	if err != nil {
+		t.Fatal("Expected nil")
+	}
 }
 
 func TestInvalidQuery(t *testing.T) {

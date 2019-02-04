@@ -29,10 +29,11 @@ const (
 	VXID = C.VSL_g_vxid
 	REQ  = C.VSL_g_request
 	SESS = C.VSL_g_session
+	max  = C.VSL_g__MAX
 )
 
 const (
-	none tribool = iota
+	_ tribool = iota
 	Yes
 	No
 )
@@ -46,8 +47,8 @@ type Varnish struct {
 	vslq        *C.struct_VSLQ
 	cursor      *C.struct_VSL_cursor
 	mu          sync.Mutex
-	closed      bool
 	done        chan struct{}
+	closed      bool
 	vslReattach bool
 }
 
