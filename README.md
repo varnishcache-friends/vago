@@ -2,15 +2,15 @@
 
 # vago
 
-Go bindings for Varnish 5.2.x using cgo.
+Go bindings for Varnish 6.0.
 
-For Varnish 4.1 refer to branch `varnish-4.1`.
+For previous versions of Varnish refer to branch `varnish-x.x`.
 
 ## Requirements
 
 To build this package you will need:
 - pkg-config
-- libvarnishapi-dev >= 5.2.0
+- libvarnishapi-dev >= 6.0
 
 You will also need to set PKG_CONFIG_PATH to the directory where `varnishapi.pc`
 is located before running `go get`. For example:
