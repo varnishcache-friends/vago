@@ -57,7 +57,7 @@ type Config struct {
 	// Path to Varnish Shared Memory file
 	Path string
 	// VSM connection timeout in milliseconds
-	// -1 for no timeout
+	// a negative value for no timeout
 	Timeout time.Duration
 	// Whether to reacquire the to the log
 	// Values can be Yes or No. Default Yes
