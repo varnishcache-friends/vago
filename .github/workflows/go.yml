@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        go: ['1.11', '1.14']
+        varnish: ['6.0', '6.1', '6.4']
+    name: Go ${{ matrix.go }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go }}
+    - name: Set up Varnish
+      run: |
+        curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${${{ matrix.varnish }}/./}/script.deb.sh | sudo bash
+        sudo apt-get install install varnish=${{ matrix.varnish }}.* varnish-dev=${{ matrix.varnish }}.*
+        sudo usermod -a -G varnish $USER
+    - name: Test
+      run: |
+        go test -v
+        go vet -unsafeptr=false
