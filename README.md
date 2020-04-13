@@ -1,10 +1,11 @@
-[![Build Status](https://travis-ci.org/phenomenes/vago.svg?branch=master)](https://travis-ci.org/phenomenes/vago)
+![ci](https://github.com/phenomenes/vago/workflows/ci/badge.svg)
 
 # vago
 
-Go bindings for Varnish 6.0.
+Go bindings for Varnish 6.x
 
-For previous versions of Varnish refer to branch `varnish-x.x`.
+If you are looking to run old versions of Varnish check for a version tag,
+`varnish-x.x`.
 
 ## Requirements
 

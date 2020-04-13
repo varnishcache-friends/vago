@@ -10,9 +10,9 @@ jobs:
   build:
     strategy:
       matrix:
-        go: ['1.11', '1.14']
-        varnish: ['6.0', '6.1', '6.4']
-    name: Go ${{ matrix.go }}
+        go: ['1.13', '1.14']
+        varnish: ['6.0', '6.3', '6.4']
+    name: Go ${{ matrix.go }} - Varnish ${{ matrix.varnish }}
     runs-on: ubuntu-latest
     steps:
     - name: Set up Go
@@ -21,10 +21,13 @@ jobs:
         go-version: ${{ matrix.go }}
     - name: Set up Varnish
       run: |
-        curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${${{ matrix.varnish }}/./}/script.deb.sh | sudo bash
-        sudo apt-get install install varnish=${{ matrix.varnish }}.* varnish-dev=${{ matrix.varnish }}.*
+        VER=`echo ${{ matrix.varnish }} | sed 's/\.//'`
+        curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${VER}/script.deb.sh | sudo bash
+        sudo apt-get install varnish=${{ matrix.varnish }}.* varnish-dev=${{ matrix.varnish }}.*
         sudo usermod -a -G varnish $USER
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Test
       run: |
-        go test -v
-        go vet -unsafeptr=false
+        sudo -E su $USER -c "go test -v"
+        sudo -E su $USER -c "go vet -unsafeptr=false"
