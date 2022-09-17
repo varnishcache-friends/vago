@@ -41,6 +41,7 @@ func (v *Varnish) Stat(s string) (uint64, bool) {
 }
 
 // do_list_cb()
+//
 //export listCallback
 func listCallback(handle unsafe.Pointer, pt *C.struct_VSC_point) C.int {
 	priv := ptrHandles.get(handle)

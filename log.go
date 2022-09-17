@@ -121,9 +121,10 @@ DispatchLoop:
 
 // dispatchCallback walks through the transaction and calls a function of
 // type LogCallback.
+//
 //export dispatchCallback
 func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, handle unsafe.Pointer) C.int {
-	var tx = uintptr(unsafe.Pointer(pt))
+	tx := uintptr(unsafe.Pointer(pt))
 	var _type string
 	logCallback := ptrHandles.get(handle)
 	for {
