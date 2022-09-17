@@ -21,7 +21,7 @@ jobs:
         go-version: ${{ matrix.go }}
     - name: Set up Varnish
       run: |
-        VER=`echo ${{ matrix.varnish }} | sed 's/[.-]//'`
+        VER=`echo ${{ matrix.varnish }} | sed 's/[.-]//g'`
         curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${VER}/script.deb.sh | sudo bash
         sudo apt-get install varnish=${VER}.* varnish-dev=${VER}.*
         sudo usermod -a -G varnish $USER
