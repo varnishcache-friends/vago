@@ -1,4 +1,4 @@
-# unreleased
+# vago 1.4.0 (17-Sep-2022)
 
 ## Changes
 
