@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        go: ['1.13', '1.14']
+        go: ['1.18', '1.19']
         varnish: ['6.0', '6.3', '6.4']
     name: Go ${{ matrix.go }} - Varnish ${{ matrix.varnish }}
     runs-on: ubuntu-latest
