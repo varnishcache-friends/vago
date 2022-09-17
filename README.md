@@ -1,4 +1,4 @@
-![ci](https://github.com/phenomenes/vago/workflows/ci/badge.svg)
+![ci](https://github.com/varnishcache-friends/vago/workflows/ci/badge.svg)
 
 # vago
 
@@ -23,7 +23,7 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 ## Installation
 
 ```
-go get github.com/phenomenes/vago
+go get github.com/varnishcache-friends/vago
 ```
 
 ## Examples
@@ -36,7 +36,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/phenomenes/vago"
+	"github.com/varnishcache-friends/vago"
 )
 
 func main() {
@@ -65,7 +65,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/phenomenes/vago"
+	"github.com/varnishcache-friends/vago"
 )
 
 func main() {
