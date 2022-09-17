@@ -1,17 +1,16 @@
-![ci](https://github.com/varnishcache-friends/vago/workflows/ci/badge.svg)
-
 # vago
 
-Go bindings for Varnish 6.x
+![ci](https://github.com/varnishcache-friends/vago/workflows/ci/badge.svg)
 
-If you are looking to run old versions of Varnish check for a version tag,
-`varnish-x.x`.
+Go bindings for Varnish 6.0, 7.1 and 7.2.
+
+Older Varnish versions are not supported.
 
 ## Requirements
 
 To build this package you will need:
 - pkg-config
-- libvarnishapi-dev >= 6.0
+- libvarnishapi-dev
 
 You will also need to set PKG_CONFIG_PATH to the directory where `varnishapi.pc`
 is located before running `go get`. For example:

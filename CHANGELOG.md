@@ -1,3 +1,11 @@
+# unreleased
+
+## Changes
+
+- Update varnish versions to 6.0, 7.1 and 7.2
+- Update tests to use go 1.18 and 1.18
+- Repository moved to varnishcache-friends
+
 # vago v1.3.0 (01-Feb-2019)
 
 ## Changes
