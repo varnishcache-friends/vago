@@ -21,9 +21,10 @@ jobs:
         go-version: ${{ matrix.go }}
     - name: Set up Varnish
       run: |
-        VER=`echo ${{ matrix.varnish }} | sed 's/[.-]//g'`
-        curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${VER}/script.deb.sh | sudo bash
-        sudo apt-get install varnish=${VER}.* varnish-dev=${VER}.*
+        DEB_VER=`echo ${{ matrix.varnish }} | sed 's/-.*//'`
+        REPO_VER=`echo ${{ matrix.varnish }} | sed 's/[.-]//g'`
+        curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${REPO_VER}/script.deb.sh | sudo bash
+        sudo apt-get install varnish=${DEB_VER}.* varnish-dev=${DEB_VER}.*
         sudo usermod -a -G varnish $USER
     - name: Checkout code
       uses: actions/checkout@v3
