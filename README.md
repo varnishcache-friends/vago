@@ -1,6 +1,7 @@
 # vago
 
 ![ci](https://github.com/varnishcache-friends/vago/workflows/ci/badge.svg)
+[![Go Reference](https://pkg.go.dev/badge/github.com/varnishcache-friends/vago.svg)](https://pkg.go.dev/github.com/varnishcache-friends/vago)
 
 Go bindings for Varnish 6.0, 7.1 and 7.2.
 
