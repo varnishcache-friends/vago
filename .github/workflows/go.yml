@@ -11,22 +11,22 @@ jobs:
     strategy:
       matrix:
         go: ['1.18', '1.19']
-        varnish: ['6.0', '6.3', '6.4']
+        varnish: ['6.0-lts', '7.1', '7.2']
     name: Go ${{ matrix.go }} - Varnish ${{ matrix.varnish }}
     runs-on: ubuntu-latest
     steps:
     - name: Set up Go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go }}
     - name: Set up Varnish
       run: |
-        VER=`echo ${{ matrix.varnish }} | sed 's/\.//'`
+        VER=`echo ${{ matrix.varnish }} | sed 's/[.-]//'`
         curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${VER}/script.deb.sh | sudo bash
-        sudo apt-get install varnish=${{ matrix.varnish }}.* varnish-dev=${{ matrix.varnish }}.*
+        sudo apt-get install varnish=${VER}.* varnish-dev=${VER}.*
         sudo usermod -a -G varnish $USER
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Test
       run: |
         sudo -E su $USER -c "go test -v"
