@@ -36,6 +36,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/varnishcache-friends/vago"
 )
@@ -45,8 +46,7 @@ func main() {
 	c := vago.Config{}
 	v, err := vago.Open(&c)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 	v.Log("", vago.RAW, vago.COPT_TAIL|vago.COPT_BATCH, func(vxid uint32, tag, _type, data string) int {
 		fmt.Printf("%10d %-14s %s %s\n", vxid, tag, _type, data)
@@ -65,6 +65,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/varnishcache-friends/vago"
 )
@@ -74,8 +75,7 @@ func main() {
 	c := vago.Config{}
 	v, err := vago.Open(&c)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal(err)
 	}
 	stats := v.Stats()
 	for field, value := range stats {
