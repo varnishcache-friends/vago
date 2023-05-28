@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/setup-go@v3
+    - uses: actions/setup-go@v4
       with:
         go-version: ${{ matrix.go }}
     - uses: varnishcache-friends/setup-varnish@v1
@@ -22,5 +22,8 @@ jobs:
         version: ${{ matrix.varnish }}
     - uses: actions/checkout@v3
     - run: |
-        sudo -E su $USER -c "go test -v"
-        sudo -E su $USER -c "go vet -unsafeptr=false"
+        sudo mkdir -p /usr/local/var/varnish/$(uname -n) /var/run/varnishd
+        sudo chown $USER /usr/local/var/varnish/$(uname -n) /var/run/varnishd
+        /usr/local/sbin/varnishd -a :1234 -b :1235
+        go test -v
+        go vet -unsafeptr=false
