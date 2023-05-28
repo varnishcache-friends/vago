@@ -3,15 +3,16 @@
 ![ci](https://github.com/varnishcache-friends/vago/workflows/ci/badge.svg)
 [![Go Reference](https://pkg.go.dev/badge/github.com/varnishcache-friends/vago.svg)](https://pkg.go.dev/github.com/varnishcache-friends/vago)
 
-Go bindings for Varnish 6.0, 7.1 and 7.2.
+Go bindings for Varnish 6.0, 7.2 and 7.3.
 
 Older Varnish versions are not supported.
 
 ## Requirements
 
 To build this package you will need:
-- pkg-config
-- libvarnishapi-dev
+
+* pkg-config
+* libvarnishapi-dev
 
 You will also need to set PKG_CONFIG_PATH to the directory where `varnishapi.pc`
 is located before running `go get`. For example:

@@ -1,34 +1,26 @@
 name: ci
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
-  build:
+  test:
+
     strategy:
       matrix:
-        go: ['1.18', '1.19']
-        varnish: ['6.0-lts', '7.1', '7.2']
+        go: ['1.19', '1.20']
+        varnish: ['6.0', '7.2', '7.3']
+
     name: Go ${{ matrix.go }} - Varnish ${{ matrix.varnish }}
     runs-on: ubuntu-latest
+
     steps:
-    - name: Set up Go
-      uses: actions/setup-go@v3
+    - uses: actions/setup-go@v3
       with:
         go-version: ${{ matrix.go }}
-    - name: Set up Varnish
-      run: |
-        DEB_VER=`echo ${{ matrix.varnish }} | sed 's/-.*//'`
-        REPO_VER=`echo ${{ matrix.varnish }} | sed 's/[.-]//g'`
-        curl -s https://packagecloud.io/install/repositories/varnishcache/varnish${REPO_VER}/script.deb.sh | sudo bash
-        sudo apt-get install varnish=${DEB_VER}.* varnish-dev=${DEB_VER}.*
-        sudo usermod -a -G varnish $USER
-    - name: Checkout code
-      uses: actions/checkout@v3
-    - name: Test
-      run: |
+    - uses: varnishcache-friends/setup-varnish@v1
+      with:
+        version: ${{ matrix.varnish }}
+    - uses: actions/checkout@v3
+    - run: |
         sudo -E su $USER -c "go test -v"
         sudo -E su $USER -c "go vet -unsafeptr=false"
