@@ -22,8 +22,7 @@ jobs:
         version: ${{ matrix.varnish }}
     - uses: actions/checkout@v3
     - run: |
-        sudo mkdir -p /usr/local/var/varnish/$(uname -n) /var/run/varnishd
-        sudo chown $USER /usr/local/var/varnish/$(uname -n) /var/run/varnishd
+        sudo install -d -o $USER /var/lib/varnish
         /usr/local/sbin/varnishd -a :1234 -b :1235
         go test -v
         go vet -unsafeptr=false
