@@ -18,7 +18,6 @@ int dispatchCallback(struct VSL_data *vsl, struct VSL_transaction **trans, void 
 import "C"
 
 import (
-	"encoding/binary"
 	"errors"
 	"time"
 	"unsafe"
@@ -28,18 +27,23 @@ const (
 	lenmask       = 0xffff
 	clientmarker  = uint32(1) << 30
 	backendmarker = uint32(1) << 31
-	identmask     = ^(uint32(3) << 30)
+	identmask0    = ^(uint32(3) << 30)
+	identmask1    = ^(uint64(0b1111111111111) << 51)
+	vermask       = uint32(3) << 16
 	// Cursor options
 	COPT_TAIL     = 1 << 0
 	COPT_BATCH    = 1 << 1
 	COPT_TAILSTOP = 1 << 2
 	// VSM status bitmap
 	vsmWrkRestarted = 1 << 11
+	// VSL_Dispatch errors
+	unknownVersion = 2
 )
 
 var (
-	ErrAbandoned = errors.New("log abandoned")
-	ErrOverrun   = errors.New("log overrun")
+	ErrAbandoned      = errors.New("log abandoned")
+	ErrOverrun        = errors.New("log overrun")
+	ErrUnknownVersion = errors.New("log version unknown")
 )
 
 type ErrVSL string
@@ -48,7 +52,7 @@ func (e ErrVSL) Error() string { return string(e) }
 
 // LogCallback defines a callback function.
 // It's used by Log.
-type LogCallback func(vxid uint32, tag, _type, data string) int
+type LogCallback func(vxid uint64, tag, _type, data string) int
 
 // Log calls the given callback for any transactions matching the query
 // and grouping.
@@ -92,6 +96,9 @@ DispatchLoop:
 			(*C.VSLQ_dispatch_f)(C.dispatchCallback),
 			handle)
 		switch i {
+		case unknownVersion:
+			// Unknown version
+			return ErrUnknownVersion
 		case 1:
 			// Call again
 			continue
@@ -131,7 +138,7 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, han
 		if tx == 0 {
 			break
 		}
-		t := ((**C.struct_VSL_transaction)(unsafe.Pointer(tx)))
+		t := (**C.struct_VSL_transaction)(unsafe.Pointer(tx))
 		if *t == nil {
 			break
 		}
@@ -146,20 +153,44 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, han
 			if C.VSL_Match(vsl, (*t).c) == 0 {
 				continue
 			}
-			s1 := cui32tosl((*t).c.rec.ptr, 8)
-			tag := C.GoString(C.VSL_tags[s1[0]>>24])
-			vxid := s1[1] & identmask
-			length := C.int(s1[0] & lenmask)
-			switch {
-			case s1[1]&(clientmarker) != 0:
-				_type = "c"
-			case s1[1]&(backendmarker) != 0:
-				_type = "b"
-			default:
-				_type = "-"
+			h1 := uint32(*(*t).c.rec.ptr)
+			tag := C.GoString(C.VSL_tags[h1>>24])
+			length := C.int(h1 & lenmask)
+			ver := C.int((h1 & vermask) >> 16)
+			pHeader := uintptr(unsafe.Pointer((*t).c.rec.ptr))
+			stride := unsafe.Sizeof(C.uint32_t(0))
+			var pData uintptr
+			var vxid uint64
+			switch ver {
+			case 0: // Varnish < 7.3.0
+				h2 := uint32(*(*C.uint32_t)(unsafe.Pointer(pHeader + stride)))
+				pData = pHeader + 2*stride
+				vxid = uint64(h2 & identmask0)
+				switch {
+				case h2&clientmarker != 0:
+					_type = "c"
+				case h2&backendmarker != 0:
+					_type = "b"
+				default:
+					_type = "-"
+				}
+			case 1: // Varnish >= 7.3.0
+				h2 := uint32(*(*C.uint32_t)(unsafe.Pointer(pHeader + stride)))
+				h3 := uint32(*(*C.uint32_t)(unsafe.Pointer(pHeader + 2*stride)))
+				pData = pHeader + 3*stride
+				vxid = (uint64(h3)<<32 | uint64(h2)) & identmask1
+				switch {
+				case h3&clientmarker != 0:
+					_type = "c"
+				case h3&backendmarker != 0:
+					_type = "b"
+				default:
+					_type = "-"
+				}
+			default: // Newer Varnish version we are not aware of: fail.
+				return C.int(unknownVersion)
 			}
-			s2 := cui32tosl((*t).c.rec.ptr, (length+2)*4)
-			data := ui32tostr(&s2[2], length)
+			data := C.GoStringN((*C.char)(unsafe.Pointer(pData)), length-1)
 			ret := logCallback.(LogCallback)(vxid, tag, _type, data)
 			if ret != 0 {
 				return C.int(ret)
@@ -168,19 +199,4 @@ func dispatchCallback(vsl *C.struct_VSL_data, pt **C.struct_VSL_transaction, han
 		tx += unsafe.Sizeof(t)
 	}
 	return 0
-}
-
-// Convert C.uint32_t to slice of uint32
-func cui32tosl(ptr *C.uint32_t, length C.int) []uint32 {
-	b := C.GoBytes(unsafe.Pointer(ptr), length)
-	s := make([]uint32, length/4)
-	for i := range s {
-		s[i] = binary.LittleEndian.Uint32(b[i*4 : (i+1)*4])
-	}
-	return s
-}
-
-// Convert uint32 to string
-func ui32tostr(val *uint32, length C.int) string {
-	return C.GoStringN((*C.char)(unsafe.Pointer(val)), length-1)
 }
